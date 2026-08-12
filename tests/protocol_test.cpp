@@ -3,10 +3,13 @@
 
 #include "../components/inovolt_bms/protocol.h"
 #include "../components/inovolt_bms/battery_registry.h"
+#include "../components/inovolt_bms/poll_scheduler.h"
 
 using esphome::inovolt_bms::BatteryTelemetry;
 using esphome::inovolt_bms::BatteryConfig;
 using esphome::inovolt_bms::BatteryRegistry;
+using esphome::inovolt_bms::PollAction;
+using esphome::inovolt_bms::PollScheduler;
 using esphome::inovolt_bms::TpMessage;
 using esphome::inovolt_bms::decode_frame;
 using esphome::inovolt_bms::make_request;
@@ -53,5 +56,27 @@ int main() {
   assert(summary.minimum_cell_number == 2);
   assert(summary.maximum_cell_number == 3);
   assert(std::fabs(summary.cell_voltage_delta - 0.06f) < 0.001f);
+
+  PollScheduler scheduler(registry);
+  auto command = scheduler.start(1000);
+  assert(command.action == PollAction::CONNECT && command.slot == 0);
+  command = scheduler.on_connected(0, 1100);
+  assert(command.action == PollAction::SEND_REQUEST);
+  assert(command.message == TpMessage::SOFTWARE);
+
+  const uint8_t software[] = {0x55, 0x14, 0x81, '1', '.', '2', '.', '3', 0, 0,
+                              0,    0,    0,    0,   0,   0,   0,   0, 0, 0xAA};
+  command = scheduler.on_frame(0, software, sizeof(software), 1200);
+  assert(command.action == PollAction::SEND_REQUEST);
+  assert(command.message == TpMessage::MODEL);
+  assert(registry.active_slot(0)->telemetry().software == "1.2.3");
+
+  command = scheduler.tick(4000);
+  assert(command.action == PollAction::DISCONNECT && command.slot == 0);
+  command = scheduler.on_disconnected(0, 4100);
+  assert(command.action == PollAction::NONE);
+  assert(scheduler.active_slot() == 1);
+  command = scheduler.tick(5400);
+  assert(command.action == PollAction::CONNECT && command.slot == 1);
   return 0;
 }

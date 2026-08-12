@@ -14,6 +14,10 @@ Each selected battery is a separate Home Assistant device. Selecting two
 batteries creates only `InoVolt Battery 1` and `InoVolt Battery 2`; slots 3–6 are
 not registered or exposed.
 
+The BLE scheduler connects to one battery at a time, requests the complete frame
+set, disconnects, and advances to the next configured slot. A missing response
+times out without blocking Wi-Fi or the Home Assistant API.
+
 No MQTT broker, cloud account or external web asset is required.
 
 ## Hardware profiles
