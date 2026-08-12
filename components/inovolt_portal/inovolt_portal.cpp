@@ -94,17 +94,13 @@ bool InoVoltPortal::parse_device(const esp32_ble_tracker::ESPBTDevice &device) {
   return true;
 }
 
-std::string InoVoltPortal::url(AsyncWebServerRequest *request) {
-#ifdef USE_ESP32
+std::string InoVoltPortal::get_url(AsyncWebServerRequest *request) {
   char buffer[AsyncWebServerRequest::URL_BUF_SIZE];
   return std::string(request->url_to(buffer));
-#else
-  return request->url();
-#endif
 }
 
 bool InoVoltPortal::canHandle(AsyncWebServerRequest *request) const {
-  const std::string url = url(request);
+  const std::string url = get_url(request);
   if (request->method() == HTTP_POST)
     return url == "/api/config";
   if (request->method() != HTTP_GET)
@@ -250,7 +246,7 @@ void InoVoltPortal::handleBody(AsyncWebServerRequest *, uint8_t *data, size_t le
 }
 
 void InoVoltPortal::handleRequest(AsyncWebServerRequest *request) {
-  const std::string url = url(request);
+  const std::string url = get_url(request);
   if (request->method() == HTTP_POST && url == "/api/config") {
     if (request->contentLength() > 4096) {
       request->send(422, "application/json", R"({"ok":false,"error":"Request too large"})");

@@ -56,7 +56,7 @@ class InoVoltPortal : public Component, public esp32_ble_tracker::ESPBTDeviceLis
   bool parse_and_store_config_(const std::string &body, std::string &error, std::string &ssid, std::string &password);
   static bool is_valid_mac(const std::string &mac);
   static std::string json_escape(const std::string &value);
-  static std::string url(AsyncWebServerRequest *request);
+  static std::string get_url(AsyncWebServerRequest *request);
 
   web_server_base::WebServerBase *base_;
   ESPPreferenceObject preference_{};
