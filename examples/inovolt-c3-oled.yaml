@@ -1,0 +1,104 @@
+substitutions:
+  name: inovolt-bms-oled
+
+esphome:
+  name: ${name}
+  friendly_name: InoVolt BMS OLED
+  min_version: 2026.7.4
+  project:
+    name: inovolt.bms
+    version: 0.1.0-dev
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+
+external_components:
+  - source: ../components
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: inovolt
+    password: "12345678"
+
+captive_portal:
+
+logger:
+
+api:
+  reboot_timeout: 0s
+
+ota:
+  - platform: esphome
+
+esp32_ble_tracker:
+  scan_parameters:
+    active: true
+    interval: 320ms
+    window: 60ms
+
+inovolt_bms:
+  id: inovolt_runtime
+
+i2c:
+  id: bus_i2c
+  sda: GPIO5
+  scl: GPIO6
+  scan: true
+  frequency: 400kHz
+
+time:
+  - platform: homeassistant
+    id: home_time
+
+font:
+  - file: "gfonts://Roboto Mono"
+    id: roboto_large
+    size: 24
+    glyphs: "0123456789:%"
+  - file: "gfonts://Roboto Mono"
+    id: roboto_small
+    size: 10
+    glyphs: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .:%-"
+
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 72x40"
+    address: 0x3C
+    i2c_id: bus_i2c
+    update_interval: 1s
+    lambda: |-
+      const auto now = id(home_time).now();
+      if (!now.is_valid()) {
+        it.print(36, 20, id(roboto_small), TextAlign::CENTER, "Syncing Time...");
+        return;
+      }
+
+      if (now.second < 30) {
+        it.strftime(36, 20, id(roboto_large), TextAlign::CENTER, "%H:%M", now);
+        return;
+      }
+
+      const size_t count = id(inovolt_runtime).active_battery_count();
+      if (count == 0) {
+        it.print(36, 20, id(roboto_small), TextAlign::CENTER, "Setup BMS");
+        return;
+      }
+
+      const size_t slot = static_cast<size_t>((now.second - 30) / 5) % count;
+      const auto *battery = id(inovolt_runtime).battery_telemetry(slot);
+      if (battery == nullptr) {
+        it.print(36, 20, id(roboto_small), TextAlign::CENTER, "BMS Offline");
+        return;
+      }
+
+      it.printf(36, 5, id(roboto_small), TextAlign::TOP_CENTER, "Battery %u", slot + 1);
+      it.printf(36, 16, id(roboto_large), TextAlign::TOP_CENTER, "%.0f%%", battery->state_of_charge);
+      const float raw_soc = battery->state_of_charge;
+      const float soc = raw_soc < 0.0f ? 0.0f : (raw_soc > 100.0f ? 100.0f : raw_soc);
+      const int width = static_cast<int>(soc * 0.7f);
+      it.rectangle(0, 34, 72, 6);
+      it.filled_rectangle(1, 35, width, 4);
