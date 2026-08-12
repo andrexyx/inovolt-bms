@@ -3,10 +3,11 @@
 InoVolt BMS connects Tianpower battery-management systems advertised as `TP_...`
 to Home Assistant through an ESP32 and Bluetooth Low Energy.
 
-> **Development status:** the inherited ESPHome component and manual examples are
-> available now. The branded captive setup portal and runtime selection of one to
-> six batteries are under active development and must not yet be sold as finished
-> firmware.
+> **Development status:** the inherited ESPHome component, manual examples and
+> embedded provisioning portal are available now. The portal can scan and persist
+> one to six `TP_...` batteries. Creating the Home Assistant entities dynamically
+> from that saved selection is still under development; do not sell this branch as
+> finished firmware.
 
 ## Goals
 
@@ -56,9 +57,9 @@ commit that file.
 - [x] Host the external component from the InoVolt repository
 - [x] Add anonymized board profiles and architecture documentation
 - [x] Add the responsive InoVolt portal UI and tested local API contract
-- [ ] Embed the portal and implement its ESP32 firmware endpoints
-- [ ] Add `TP_...` scanning, selection and friendly names
-- [ ] Add persistent configuration for up to six batteries
+- [x] Embed the portal and implement its ESP32 firmware endpoints
+- [x] Add `TP_...` scanning, selection and friendly names
+- [x] Add persistent configuration for up to six batteries
 - [ ] Add sequential multi-battery polling
 - [ ] Register only configured batteries in Home Assistant
 - [ ] Produce factory binaries and a beginner installation guide

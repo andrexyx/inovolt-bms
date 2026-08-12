@@ -34,6 +34,9 @@ wifi:
 
 captive_portal:
 
+# Serves the branded page and the local Wi-Fi/BLE provisioning API.
+inovolt_portal:
+
 logger:
   level: DEBUG
 
