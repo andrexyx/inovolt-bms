@@ -11,15 +11,17 @@
 #include "esphome/core/log.h"
 #include "portal_data.h"
 
+#ifdef USE_ESP32
+
 namespace esphome::inovolt_portal {
 
 static const char *const TAG = "inovolt_portal";
 static constexpr uint32_t INOVOLT_PREFERENCE_KEY = 0x494E4F56;
 
-std::string InoVoltPortal::json_escape_(const std::string &value) {
+std::string InoVoltPortal::json_escape(const std::string &value) {
   std::string escaped;
   escaped.reserve(value.size());
-  static const char HEX[] = "0123456789abcdef";
+  static const char JSON_HEX[] = "0123456789abcdef";
   for (const unsigned char character : value) {
     switch (character) {
       case '"':
@@ -46,8 +48,8 @@ std::string InoVoltPortal::json_escape_(const std::string &value) {
       default:
         if (character < 0x20) {
           escaped += "\\u00";
-          escaped += HEX[character >> 4];
-          escaped += HEX[character & 0x0F];
+          escaped += JSON_HEX[character >> 4];
+          escaped += JSON_HEX[character & 0x0F];
         } else {
           escaped += static_cast<char>(character);
         }
@@ -78,7 +80,7 @@ bool InoVoltPortal::parse_device(const esp32_ble_tracker::ESPBTDevice &device) {
     return false;
 
   const std::string mac = device.address_str();
-  std::lock_guard<std::mutex> lock(this->discovered_mutex_);
+  std::scoped_lock lock(this->discovered_mutex_);
   auto found = std::find_if(this->discovered_.begin(), this->discovered_.end(),
                             [&mac](const auto &item) { return item.mac == mac; });
   if (found == this->discovered_.end()) {
@@ -92,7 +94,7 @@ bool InoVoltPortal::parse_device(const esp32_ble_tracker::ESPBTDevice &device) {
   return true;
 }
 
-std::string InoVoltPortal::url_(AsyncWebServerRequest *request) {
+std::string InoVoltPortal::url(AsyncWebServerRequest *request) {
 #ifdef USE_ESP32
   char buffer[AsyncWebServerRequest::URL_BUF_SIZE];
   return std::string(request->url_to(buffer));
@@ -102,7 +104,7 @@ std::string InoVoltPortal::url_(AsyncWebServerRequest *request) {
 }
 
 bool InoVoltPortal::canHandle(AsyncWebServerRequest *request) const {
-  const std::string url = url_(request);
+  const std::string url = url(request);
   if (request->method() == HTTP_POST)
     return url == "/api/config";
   if (request->method() != HTTP_GET)
@@ -114,7 +116,8 @@ bool InoVoltPortal::canHandle(AsyncWebServerRequest *request) const {
 }
 
 void InoVoltPortal::send_asset_(AsyncWebServerRequest *request, const char *content_type, const char *content) {
-  auto *response = request->beginResponse(200, content_type, reinterpret_cast<const uint8_t *>(content), strlen(content));
+  auto *response =
+      request->beginResponse(200, content_type, reinterpret_cast<const uint8_t *>(content), strlen(content));
   response->addHeader("Cache-Control", "no-store");
   request->send(response);
 }
@@ -131,9 +134,9 @@ void InoVoltPortal::send_wifi_scan_(AsyncWebServerRequest *request) {
     if (!first)
       stream->print(",");
     first = false;
-    stream->print("{\"ssid\":\"");
-    stream->print(json_escape_(scan.get_ssid().str()));
-    stream->printf("\",\"rssi\":%d,\"secure\":%s}", scan.get_rssi(), scan.get_with_auth() ? "true" : "false");
+    stream->print(R"({"ssid":")");
+    stream->print(json_escape(scan.get_ssid().str()));
+    stream->printf(R"(","rssi":%d,"secure":%s})", scan.get_rssi(), scan.get_with_auth() ? "true" : "false");
   }
   stream->print("]");
   request->send(stream);
@@ -144,22 +147,22 @@ void InoVoltPortal::send_bms_scan_(AsyncWebServerRequest *request) {
     this->parent_->start_scan();
   auto *stream = request->beginResponseStream("application/json");
   stream->print("[");
-  std::lock_guard<std::mutex> lock(this->discovered_mutex_);
+  std::scoped_lock lock(this->discovered_mutex_);
   for (size_t i = 0; i < this->discovered_.size(); i++) {
     const auto &battery = this->discovered_[i];
     if (i != 0)
       stream->print(",");
-    stream->print("{\"name\":\"");
-    stream->print(json_escape_(battery.name));
-    stream->print("\",\"mac\":\"");
+    stream->print(R"({"name":")");
+    stream->print(json_escape(battery.name));
+    stream->print(R"(","mac":")");
     stream->print(battery.mac);
-    stream->printf("\",\"rssi\":%d}", battery.rssi);
+    stream->printf(R"(","rssi":%d})", battery.rssi);
   }
   stream->print("]");
   request->send(stream);
 }
 
-bool InoVoltPortal::is_valid_mac_(const std::string &mac) {
+bool InoVoltPortal::is_valid_mac(const std::string &mac) {
   if (mac.size() != 17)
     return false;
   for (size_t i = 0; i < mac.size(); i++) {
@@ -174,7 +177,7 @@ bool InoVoltPortal::is_valid_mac_(const std::string &mac) {
 }
 
 bool InoVoltPortal::parse_and_store_config_(const std::string &body, std::string &error, std::string &ssid,
-                                             std::string &password) {
+                                            std::string &password) {
   InoVoltStoredConfig candidate{};
   bool valid = json::parse_json(body, [&](JsonObject root) -> bool {
     ssid = root["wifi"]["ssid"] | "";
@@ -195,7 +198,7 @@ bool InoVoltPortal::parse_and_store_config_(const std::string &body, std::string
       std::string mac = battery["mac"] | "";
       std::string advertised_name = battery["advertised_name"] | "";
       std::string friendly_name = battery["friendly_name"] | "";
-      if (!is_valid_mac_(mac) || advertised_name.rfind("TP_", 0) != 0 || advertised_name.size() >= 32 ||
+      if (!is_valid_mac(mac) || !advertised_name.starts_with("TP_") || advertised_name.size() >= 32 ||
           friendly_name.empty() || friendly_name.size() >= 32 || !macs.insert(mac).second) {
         error = "Invalid or duplicate battery";
         return false;
@@ -225,12 +228,12 @@ void InoVoltPortal::handle_config_save_(AsyncWebServerRequest *request) {
   std::string ssid;
   std::string password;
   if (!this->parse_and_store_config_(this->request_body_, error, ssid, password)) {
-    request->send(422, "application/json", ("{\"ok\":false,\"error\":\"" + json_escape_(error) + "\"}").c_str());
+    request->send(422, "application/json", (R"({"ok":false,"error":")" + json_escape(error) + R"("})").c_str());
     this->request_body_.clear();
     return;
   }
 
-  request->send(200, "application/json", "{\"ok\":true,\"rebooting\":true}");
+  request->send(200, "application/json", R"({"ok":true,"rebooting":true})");
   this->request_body_.clear();
   this->defer([ssid, password]() { wifi::global_wifi_component->save_wifi_sta(ssid, password); });
   this->set_timeout("inovolt-reboot", 1800, []() { App.safe_reboot(); });
@@ -247,10 +250,10 @@ void InoVoltPortal::handleBody(AsyncWebServerRequest *, uint8_t *data, size_t le
 }
 
 void InoVoltPortal::handleRequest(AsyncWebServerRequest *request) {
-  const std::string url = url_(request);
+  const std::string url = url(request);
   if (request->method() == HTTP_POST && url == "/api/config") {
     if (request->contentLength() > 4096) {
-      request->send(422, "application/json", "{\"ok\":false,\"error\":\"Request too large\"}");
+      request->send(422, "application/json", R"({"ok":false,"error":"Request too large"})");
       return;
     }
     this->handle_config_save_(request);
@@ -270,3 +273,5 @@ void InoVoltPortal::handleRequest(AsyncWebServerRequest *request) {
 }
 
 }  // namespace esphome::inovolt_portal
+
+#endif

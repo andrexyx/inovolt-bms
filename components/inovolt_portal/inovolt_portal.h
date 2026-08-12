@@ -10,6 +10,8 @@
 #include "esphome/core/component.h"
 #include "esphome/core/preferences.h"
 
+#ifdef USE_ESP32
+
 namespace esphome::inovolt_portal {
 
 static constexpr size_t INOVOLT_MAX_BATTERIES = 6;
@@ -32,9 +34,7 @@ struct InoVoltDiscoveredBattery {
   int rssi;
 };
 
-class InoVoltPortal : public Component,
-                      public esp32_ble_tracker::ESPBTDeviceListener,
-                      public AsyncWebHandler {
+class InoVoltPortal : public Component, public esp32_ble_tracker::ESPBTDeviceListener, public AsyncWebHandler {
  public:
   explicit InoVoltPortal(web_server_base::WebServerBase *base) : base_(base) {}
 
@@ -54,9 +54,9 @@ class InoVoltPortal : public Component,
   void send_bms_scan_(AsyncWebServerRequest *request);
   void handle_config_save_(AsyncWebServerRequest *request);
   bool parse_and_store_config_(const std::string &body, std::string &error, std::string &ssid, std::string &password);
-  static bool is_valid_mac_(const std::string &mac);
-  static std::string json_escape_(const std::string &value);
-  static std::string url_(AsyncWebServerRequest *request);
+  static bool is_valid_mac(const std::string &mac);
+  static std::string json_escape(const std::string &value);
+  static std::string url(AsyncWebServerRequest *request);
 
   web_server_base::WebServerBase *base_;
   ESPPreferenceObject preference_{};
@@ -67,3 +67,5 @@ class InoVoltPortal : public Component,
 };
 
 }  // namespace esphome::inovolt_portal
+
+#endif
