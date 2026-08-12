@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#07110d">
+    <title>Configurare InoVolt</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="brand">
+        <div class="battery-mark" aria-hidden="true"><span>INO</span><b>VOLT</b></div>
+        <div>
+          <p class="eyebrow">Gateway local pentru baterii</p>
+          <h1>Configurare InoVolt</h1>
+        </div>
+        <span class="local-badge">100% local</span>
+      </header>
+
+      <nav class="steps" aria-label="Pașii configurării">
+        <button class="step active" data-step="1"><span>1</span> Rețea</button>
+        <button class="step" data-step="2"><span>2</span> Baterii</button>
+        <button class="step" data-step="3"><span>3</span> Confirmare</button>
+      </nav>
+
+      <section class="panel active" data-panel="1">
+        <div class="panel-heading">
+          <div><p class="eyebrow">Pasul 1</p><h2>Conectare la rețeaua locală</h2></div>
+          <button class="secondary" id="scan-wifi">Caută rețele</button>
+        </div>
+        <p class="help">După configurare, hotspotul InoVolt se închide. Datele ajung direct în Home Assistant prin rețeaua casei.</p>
+        <div id="wifi-list" class="choice-list" aria-live="polite"></div>
+        <label>Rețea Wi-Fi<input id="wifi-ssid" autocomplete="off" placeholder="Selectează sau scrie numele rețelei"></label>
+        <label>Parolă Wi-Fi<input id="wifi-password" type="password" autocomplete="new-password" placeholder="Parola rămâne numai pe dispozitiv"></label>
+        <div class="actions"><span></span><button class="primary" data-next="2">Continuă</button></div>
+      </section>
+
+      <section class="panel" data-panel="2" hidden>
+        <div class="panel-heading">
+          <div><p class="eyebrow">Pasul 2</p><h2>Selectează bateriile</h2></div>
+          <button class="secondary" id="scan-bms">Scanează Bluetooth</button>
+        </div>
+        <p class="help">Sunt afișate numai bateriile cu nume <code>TP_...</code>. Poți selecta maximum șase.</p>
+        <div class="selection-count"><strong id="selected-count">0</strong> din 6 selectate</div>
+        <div id="battery-list" class="battery-list" aria-live="polite"></div>
+        <div class="actions"><button class="ghost" data-back="1">Înapoi</button><button class="primary" data-next="3">Continuă</button></div>
+      </section>
+
+      <section class="panel" data-panel="3" hidden>
+        <p class="eyebrow">Pasul 3</p><h2>Verifică și salvează</h2>
+        <div id="summary" class="summary"></div>
+        <div id="errors" class="errors" role="alert"></div>
+        <div class="actions"><button class="ghost" data-back="2">Înapoi</button><button class="primary" id="save">Salvează configurația</button></div>
+      </section>
+
+      <section class="success" id="success" hidden>
+        <div class="check">✓</div><h2>Configurare salvată</h2>
+        <p>Gateway-ul se va conecta la rețeaua locală și va apărea în Home Assistant ca <strong>InoVolt BMS</strong>.</p>
+        <p class="muted">Poți închide această pagină după ce hotspotul <code>inovolt</code> dispare.</p>
+      </section>
+
+      <footer>InoVolt · Fără cloud obligatoriu · Date păstrate local</footer>
+    </main>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

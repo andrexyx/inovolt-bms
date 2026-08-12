@@ -55,7 +55,8 @@ commit that file.
 - [x] Import the proven Tianpower BLE protocol implementation
 - [x] Host the external component from the InoVolt repository
 - [x] Add anonymized board profiles and architecture documentation
-- [ ] Add the InoVolt captive provisioning portal
+- [x] Add the responsive InoVolt portal UI and tested local API contract
+- [ ] Embed the portal and implement its ESP32 firmware endpoints
 - [ ] Add `TP_...` scanning, selection and friendly names
 - [ ] Add persistent configuration for up to six batteries
 - [ ] Add sequential multi-battery polling
