@@ -10,6 +10,10 @@ Local ESP32 gateway for up to six Bluetooth batteries advertised as `TP_...`.
 4. The ESP32 stores the configuration locally, joins the customer LAN and reboots.
 5. Selected batteries are polled sequentially and exposed through the native ESPHome API.
 
+Each selected battery is a separate Home Assistant device. Selecting two
+batteries creates only `InoVolt Battery 1` and `InoVolt Battery 2`; slots 3–6 are
+not registered or exposed.
+
 No MQTT broker, cloud account or external web asset is required.
 
 ## Hardware profiles

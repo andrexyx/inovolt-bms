@@ -2,8 +2,11 @@
 #include <cmath>
 
 #include "../components/inovolt_bms/protocol.h"
+#include "../components/inovolt_bms/battery_registry.h"
 
 using esphome::inovolt_bms::BatteryTelemetry;
+using esphome::inovolt_bms::BatteryConfig;
+using esphome::inovolt_bms::BatteryRegistry;
 using esphome::inovolt_bms::TpMessage;
 using esphome::inovolt_bms::decode_frame;
 using esphome::inovolt_bms::make_request;
@@ -29,5 +32,26 @@ int main() {
 
   uint8_t invalid[20]{};
   assert(!decode_frame(invalid, sizeof(invalid), telemetry));
+
+  BatteryRegistry registry;
+  std::string error;
+  assert(registry.configure({
+                                {"50:CF:14:00:00:01", "TP_DEMO001", "Battery 1"},
+                                {"50:CF:14:00:00:02", "TP_DEMO002", "Battery 2"},
+                            },
+                            error));
+  assert(registry.active_count() == 2);
+  assert(registry.active_slot(0)->device_key() == "inovolt_battery_1");
+  assert(registry.active_slot(1)->device_key() == "inovolt_battery_2");
+  assert(registry.active_slot(2) == nullptr);
+
+  registry.active_slot(0)->telemetry().cell_count = 3;
+  registry.active_slot(0)->telemetry().cells[0] = 3.31f;
+  registry.active_slot(0)->telemetry().cells[1] = 3.29f;
+  registry.active_slot(0)->telemetry().cells[2] = 3.35f;
+  const auto summary = registry.active_slot(0)->summary();
+  assert(summary.minimum_cell_number == 2);
+  assert(summary.maximum_cell_number == 3);
+  assert(std::fabs(summary.cell_voltage_delta - 0.06f) < 0.001f);
   return 0;
 }
