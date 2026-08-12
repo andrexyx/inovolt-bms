@@ -3,7 +3,8 @@ substitutions:
   bms0: "device0"
   bms1: "device1"
   device_description: "Monitor two Tianpower Battery Management Systems via BLE"
-  external_components_source: github://syssi/esphome-tianpower-bms@main
+  # Modified for InoVolt: the external component is maintained in this repository.
+  external_components_source: github://andrexyx/inovolt-bms@main
 
 esphome:
   name: ${name}

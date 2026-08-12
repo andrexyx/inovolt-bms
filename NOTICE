@@ -1,0 +1,9 @@
+InoVolt BMS
+Copyright 2026 InoVolt contributors
+
+This product includes software derived from esphome-tianpower-bms:
+https://github.com/syssi/esphome-tianpower-bms
+
+Original project maintained by syssi, with testing and contributions from the
+upstream community. The original and modified work is distributed under the
+Apache License, Version 2.0.

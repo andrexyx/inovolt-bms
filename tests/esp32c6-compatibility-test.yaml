@@ -1,7 +1,8 @@
 substitutions:
   name: esp32c6-compatibility-test
   device_description: "Verify the project builds from source on ESP32C6"
-  external_components_source: github://syssi/esphome-tianpower-bms@main
+  # Modified for InoVolt: validate the component hosted in this repository.
+  external_components_source: github://andrexyx/inovolt-bms@main
 
 esphome:
   name: ${name}
