@@ -34,6 +34,11 @@ class InoVoltBmsComponent : public Component, public esp32_ble_tracker::ESPBTDev
   const std::array<DiscoveredBattery, 24> &discovered() const { return this->discovered_; }
   size_t discovered_count() const { return this->discovered_count_; }
   BatteryRegistry &registry() { return this->registry_; }
+  size_t active_battery_count() const { return this->registry_.active_count(); }
+  const BatteryTelemetry *battery_telemetry(size_t index) const {
+    const auto *slot = this->registry_.active_slot(index);
+    return slot == nullptr ? nullptr : &slot->telemetry();
+  }
 
  protected:
   void run_command_(const PollCommand &command);

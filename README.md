@@ -25,6 +25,16 @@ No MQTT broker, cloud account or external web asset is required.
 - ESP32-S3 with PSRAM: recommended for one to six batteries.
 - ESP32-C3: supported for one or two batteries.
 
+### ESP32-C3 with integrated OLED
+
+![ESP32-C3 test board with integrated OLED](docs/images/esp32-c3-oled-board.jpg)
+
+For compact ESP32-C3 boards with an integrated SSD1306 72×40 OLED, use
+`examples/inovolt-c3-oled.yaml`. The display alternates between the clock and
+five-second pages for each configured battery. GPIO5/GPIO6 and address `0x3C`
+match the current InoVolt test board. The safe default is 400 kHz I²C; 800 kHz
+can be tested per board but is not required.
+
 This clean implementation is under active development. Do not install it in a
 customer system until the firmware build and real-battery verification checklist
 in `docs/TESTING.md` is complete.
