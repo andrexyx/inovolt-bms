@@ -1,0 +1,37 @@
+type: custom:inovolt-battery-card
+title: Bateria 1
+soc_entity: sensor.bateria_1_01_soc
+voltage_entity: sensor.bateria_1_02_tensiune
+current_entity: sensor.bateria_1_03_curent
+power_entity: sensor.bateria_1_04_putere
+delta_entity: sensor.bateria_1_17_diferenta_celule
+columns: 4
+segments: 7
+header_segments: 10
+cell_voltage_min: 2.8
+cell_voltage_max: 3.65
+equal_tolerance: 0.001
+soc_colors:
+  - from: 0
+    color: "#e0444e"
+  - from: 20
+    color: "#f2a72e"
+  - from: 50
+    color: "#20c768"
+cells:
+  - { name: C1, entity: sensor.bateria_1_40_celula_1, balancing_entity: binary_sensor.bateria_1_91_balansare_celula_1 }
+  - { name: C2, entity: sensor.bateria_1_41_celula_2, balancing_entity: binary_sensor.bateria_1_92_balansare_celula_2 }
+  - { name: C3, entity: sensor.bateria_1_42_celula_3, balancing_entity: binary_sensor.bateria_1_93_balansare_celula_3 }
+  - { name: C4, entity: sensor.bateria_1_43_celula_4, balancing_entity: binary_sensor.bateria_1_94_balansare_celula_4 }
+  - { name: C5, entity: sensor.bateria_1_44_celula_5, balancing_entity: binary_sensor.bateria_1_95_balansare_celula_5 }
+  - { name: C6, entity: sensor.bateria_1_45_celula_6, balancing_entity: binary_sensor.bateria_1_96_balansare_celula_6 }
+  - { name: C7, entity: sensor.bateria_1_46_celula_7, balancing_entity: binary_sensor.bateria_1_97_balansare_celula_7 }
+  - { name: C8, entity: sensor.bateria_1_47_celula_8, balancing_entity: binary_sensor.bateria_1_98_balansare_celula_8 }
+  - { name: C9, entity: sensor.bateria_1_48_celula_9, balancing_entity: binary_sensor.bateria_1_99_balansare_celula_9 }
+  - { name: C10, entity: sensor.bateria_1_49_celula_10, balancing_entity: binary_sensor.bateria_1_99_balansare_celula_10 }
+  - { name: C11, entity: sensor.bateria_1_50_celula_11, balancing_entity: binary_sensor.bateria_1_99_balansare_celula_11 }
+  - { name: C12, entity: sensor.bateria_1_51_celula_12, balancing_entity: binary_sensor.bateria_1_99_balansare_celula_12 }
+  - { name: C13, entity: sensor.bateria_1_52_celula_13, balancing_entity: binary_sensor.bateria_1_99_balansare_celula_13 }
+  - { name: C14, entity: sensor.bateria_1_53_celula_14, balancing_entity: binary_sensor.bateria_1_99_balansare_celula_14 }
+  - { name: C15, entity: sensor.bateria_1_54_celula_15, balancing_entity: binary_sensor.bateria_1_99_balansare_celula_15 }
+  - { name: C16, entity: sensor.bateria_1_55_celula_16, balancing_entity: binary_sensor.bateria_1_99_balansare_celula_16 }

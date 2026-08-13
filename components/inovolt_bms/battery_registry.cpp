@@ -56,7 +56,7 @@ std::string BatterySlot::device_key() const { return "inovolt_battery_" + std::t
 
 bool BatteryRegistry::configure(const std::vector<BatteryConfig> &configs, std::string &error) {
   if (configs.empty() || configs.size() > INOVOLT_MAX_BATTERIES) {
-    error = "Select between one and six batteries";
+    error = "Select between one and four batteries";
     return false;
   }
 

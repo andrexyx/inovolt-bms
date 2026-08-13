@@ -1,13 +1,23 @@
 substitutions:
-  name: inovolt-bms-oled
+  name: inovolt
 
 esphome:
   name: ${name}
-  friendly_name: InoVolt BMS OLED
+  name_add_mac_suffix: true
+  friendly_name: InoVolt BMS
   min_version: 2026.7.4
   project:
     name: inovolt.bms
     version: 0.1.0-dev
+  devices:
+    - id: inovolt_battery_1
+      name: Bateria 1
+    - id: inovolt_battery_2
+      name: Bateria 2
+    - id: inovolt_battery_3
+      name: Bateria 3
+    - id: inovolt_battery_4
+      name: Bateria 4
 
 esp32:
   board: esp32-c3-devkitm-1
@@ -21,10 +31,18 @@ wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
   ap:
-    ssid: inovolt
     password: "12345678"
+    ap_timeout: 5s
 
 captive_portal:
+
+web_server:
+  port: 80
+  version: 3
+
+# Portal local InoVolt: configurare Wi-Fi si maximum 4 baterii TP_.
+inovolt_portal:
+  id: inovolt_setup
 
 logger:
 
@@ -40,8 +58,37 @@ esp32_ble_tracker:
     interval: 320ms
     window: 60ms
 
+esp32_ble:
+  max_connections: 4
+
+# Patru sloturi BLE reutilizabile. Adresele reale sunt incarcate din portal.
+ble_client:
+  - mac_address: 00:00:00:00:00:01
+    id: inovolt_client_1
+    auto_connect: false
+  - mac_address: 00:00:00:00:00:02
+    id: inovolt_client_2
+    auto_connect: false
+  - mac_address: 00:00:00:00:00:03
+    id: inovolt_client_3
+    auto_connect: false
+  - mac_address: 00:00:00:00:00:04
+    id: inovolt_client_4
+    auto_connect: false
+
 inovolt_bms:
   id: inovolt_runtime
+  portal_id: inovolt_setup
+  clients:
+    - inovolt_client_1
+    - inovolt_client_2
+    - inovolt_client_3
+    - inovolt_client_4
+  devices:
+    - inovolt_battery_1
+    - inovolt_battery_2
+    - inovolt_battery_3
+    - inovolt_battery_4
 
 i2c:
   id: bus_i2c
@@ -55,13 +102,13 @@ time:
     id: home_time
 
 font:
-  - file: "gfonts://Roboto Mono"
+  - file: "../assets/RobotoMono-Regular.ttf"
     id: roboto_large
-    size: 24
+    size: 22
     glyphs: "0123456789:%"
-  - file: "gfonts://Roboto Mono"
+  - file: "../assets/RobotoMono-Regular.ttf"
     id: roboto_small
-    size: 10
+    size: 12
     glyphs: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .:%-"
 
 display:
@@ -71,6 +118,18 @@ display:
     i2c_id: bus_i2c
     update_interval: 1s
     lambda: |-
+      if (millis() < 3000) {
+        it.print(36, 20, id(roboto_small), TextAlign::CENTER, "InoVolt");
+        return;
+      }
+
+      if (millis() < 6000) {
+        const std::string mac = get_mac_address();
+        const std::string suffix = mac.size() >= 4 ? mac.substr(mac.size() - 4) : mac;
+        it.printf(36, 20, id(roboto_small), TextAlign::CENTER, "InoVolt-%s", suffix.c_str());
+        return;
+      }
+
       const auto now = id(home_time).now();
       if (!now.is_valid()) {
         it.print(36, 20, id(roboto_small), TextAlign::CENTER, "Syncing Time...");
@@ -78,7 +137,7 @@ display:
       }
 
       if (now.second < 30) {
-        it.strftime(36, 20, id(roboto_large), TextAlign::CENTER, "%H:%M", now);
+        it.strftime(36, 21, id(roboto_large), TextAlign::CENTER, "%H:%M", now);
         return;
       }
 
@@ -88,17 +147,16 @@ display:
         return;
       }
 
-      const size_t slot = static_cast<size_t>((now.second - 30) / 5) % count;
-      const auto *battery = id(inovolt_runtime).battery_telemetry(slot);
-      if (battery == nullptr) {
+      const auto *battery = id(inovolt_runtime).battery_telemetry(0);
+      if (battery == nullptr || !battery->has_status) {
         it.print(36, 20, id(roboto_small), TextAlign::CENTER, "BMS Offline");
         return;
       }
 
-      it.printf(36, 5, id(roboto_small), TextAlign::TOP_CENTER, "Battery %u", slot + 1);
-      it.printf(36, 16, id(roboto_large), TextAlign::TOP_CENTER, "%.0f%%", battery->state_of_charge);
+      it.printf(36, 18, id(roboto_large), TextAlign::CENTER, "%.0f%%", battery->state_of_charge);
       const float raw_soc = battery->state_of_charge;
       const float soc = raw_soc < 0.0f ? 0.0f : (raw_soc > 100.0f ? 100.0f : raw_soc);
       const int width = static_cast<int>(soc * 0.7f);
       it.rectangle(0, 34, 72, 6);
-      it.filled_rectangle(1, 35, width, 4);
+      if (width > 0)
+        it.filled_rectangle(1, 35, width, 4);

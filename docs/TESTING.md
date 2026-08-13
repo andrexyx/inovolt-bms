@@ -14,7 +14,7 @@
 - First boot opens `inovolt` / `12345678`.
 - Android and iOS captive-page probes open the local page.
 - Scan returns only devices whose advertised name begins with `TP_`.
-- Save one, two and six battery configurations.
+- Save one, two and four battery configurations.
 - Join a 2.4 GHz customer network and reconnect after power loss.
 - Home Assistant discovers only the selected batteries.
 - Compare voltage, current, state of charge, temperature and all cells with the battery display.

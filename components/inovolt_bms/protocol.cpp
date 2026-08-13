@@ -37,6 +37,7 @@ bool decode_frame(const uint8_t *frame, size_t length, BatteryTelemetry &telemet
       telemetry.model = read_text(frame + 3);
       break;
     case TpMessage::STATUS:
+      telemetry.has_status = true;
       telemetry.state_of_charge = read_u16(frame, 3);
       telemetry.voltage = read_u16(frame, 5) * 0.01f;
       telemetry.average_temperature = read_i16(frame, 7) * 0.1f;

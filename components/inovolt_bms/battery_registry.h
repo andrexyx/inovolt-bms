@@ -9,7 +9,7 @@
 
 namespace esphome::inovolt_bms {
 
-constexpr size_t INOVOLT_MAX_BATTERIES = 6;
+constexpr size_t INOVOLT_MAX_BATTERIES = 4;
 
 struct BatteryConfig {
   std::string mac;

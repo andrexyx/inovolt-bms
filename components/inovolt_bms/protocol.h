@@ -24,6 +24,7 @@ enum class TpMessage : uint8_t {
 };
 
 struct BatteryTelemetry {
+  bool has_status{false};
   std::string software;
   std::string model;
   float state_of_charge{0.0f};
