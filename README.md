@@ -2,6 +2,14 @@
 
 Local ESP32 gateway for up to six Bluetooth batteries advertised as `TP_...`.
 
+## Integrare Home Assistant cu card UI inclus
+
+Integrarea InoVolt BMS pentru Home Assistant este livrată împreună cu un card UI Lovelace dedicat. Cardul afișează SOC-ul, tensiunea, curentul, puterea, diferența dintre celule, toate cele 16 tensiuni și indicatoarele individuale de balansare.
+
+![Cardul UI InoVolt BMS în Home Assistant](docs/images/inovolt-battery-card-ui.jpeg)
+
+Vezi [tutorialul complet](docs/HOME_ASSISTANT_CARD.md) și [configurația exemplu](examples/home-assistant-card.yaml).
+
 ## Product behaviour
 
 1. On first boot the ESP32 creates Wi-Fi network `inovolt` with password `12345678`.
